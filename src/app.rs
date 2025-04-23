@@ -66,7 +66,7 @@ impl App {
                 self.system_info.cpu_usage = self.simulation_value.max(0.0).min(100.0);
             }
             
-            self.reactor.update(self.system_info.cpu_usage.max(0.0).min(100.0));
+            self.reactor.update(&self.system_info);
             
             // Update reactor status based on system load
             self.update_reactor_status();
@@ -80,7 +80,7 @@ impl App {
             return;
         }
 
-        let stability = self.reactor.stability();
+        let stability = self.reactor.stability;
         self.reactor_status = match stability {
             s if s > 90.0 => "Critical - Meltdown Imminent!".to_string(),
             s if s > 75.0 => "Danger - Severe Radiation Leakage".to_string(),

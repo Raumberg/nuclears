@@ -1,58 +1,71 @@
-use sysinfo::{System, RefreshKind};
+use std::time::{Duration, Instant};
+use sysinfo::{System, CpuRefreshKind};
 
 pub struct SystemInfo {
     sys: System,
+    pub uptime: Duration,
     pub cpu_usage: f32,
     pub memory_usage: f32,
+    pub memory_total: u64,
+    pub memory_used: u64,
+    pub cpu_count: usize,
     pub cpu_temp: f32,
-    pub uptime: u64,
-    pub running_processes: usize,
+    pub core_usage: Vec<f32>,
+    start_time: Instant,
 }
 
 impl SystemInfo {
     pub fn new() -> Self {
-        let mut sys = System::new_with_specifics(
-            RefreshKind::everything()
-        );
+        let mut sys = System::new_all();
         sys.refresh_all();
+        
+        let cpu_count = sys.cpus().len();
+        let mut core_usage = vec![0.0; cpu_count];
+        
+        for (i, cpu) in sys.cpus().iter().enumerate() {
+            core_usage[i] = cpu.cpu_usage();
+        }
         
         SystemInfo {
             sys,
+            uptime: Duration::from_secs(0),
             cpu_usage: 0.0,
             memory_usage: 0.0,
-            cpu_temp: 0.0,
-            uptime: 0,
-            running_processes: 0,
+            memory_total: 0,
+            memory_used: 0,
+            cpu_count,
+            cpu_temp: 20.0,
+            core_usage,
+            start_time: Instant::now(),
         }
     }
 
     pub fn update(&mut self) {
         self.sys.refresh_all();
         
-        // Calculate average CPU usage
-        let mut cpu_usage_total = 0.0;
-        let cpu_count = self.sys.cpus().len();
+        self.uptime = self.start_time.elapsed();
         
-        for cpu in self.sys.cpus() {
-            cpu_usage_total += cpu.cpu_usage();
+        let mut total_usage = 0.0;
+        for (i, cpu) in self.sys.cpus().iter().enumerate() {
+            let usage = cpu.cpu_usage();
+            self.core_usage[i] = usage;
+            total_usage += usage;
         }
         
-        self.cpu_usage = cpu_usage_total / cpu_count as f32;
+        self.cpu_usage = total_usage / self.cpu_count as f32;
         
-        // Memory usage percentage
-        let total_memory = self.sys.total_memory();
-        let used_memory = self.sys.used_memory();
+        self.memory_total = self.sys.total_memory();
+        self.memory_used = self.sys.used_memory();
+        self.memory_usage = (self.memory_used as f32 / self.memory_total as f32) * 100.0;
         
-        self.memory_usage = (used_memory as f32 / total_memory as f32) * 100.0;
-        
-        // Get system uptime
-        self.uptime = System::uptime();
-        
-        // Count running processes
-        self.running_processes = self.sys.processes().len();
-        
-        // Simulate temperature (sysinfo doesn't provide temp on all platforms)
-        // In a real app, you might use another crate or platform-specific code
-        self.cpu_temp = 40.0 + (self.cpu_usage * 0.5);
+        self.cpu_temp = 40.0 + (self.cpu_usage / 100.0) * 60.0;
+    }
+
+    pub fn get_core_usage(&self, core_index: usize) -> f32 {
+        if core_index < self.core_usage.len() {
+            self.core_usage[core_index]
+        } else {
+            self.cpu_usage
+        }
     }
 } 
