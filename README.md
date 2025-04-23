@@ -17,6 +17,11 @@ A fun CLI-based system monitor that visualizes your system load as a nuclear rea
 - `p` - Pause/Resume monitoring
 - `h` - Toggle help screen
 
+## UI
+![gallery](assets/monitoring.jpeg)
+![gallery](assets/monitoring.jpeg)
+![gallery](assets/explosion.jpeg)
+
 ## Installation
 
 Ensure you have Rust and Cargo installed. Then clone this repository and build:
