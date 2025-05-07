@@ -27,19 +27,21 @@ A fun CLI-based system monitor that visualizes your system load as a nuclear rea
 Ensure you have Rust and Cargo installed. Then clone this repository and build:
 
 ```bash
-git clone https://github.com/yourusername/nuclear-monitor.git
-cd nuclear-monitor
+git clone https://github.com/Raumberg/nuclears.git
+cd nuclears
 cargo build --release
 ```
 
-The compiled binary will be in `target/release/nuclear-monitor`.
+The compiled binary will be in `target/release/nuclears`.
 
 ## Usage
 
 Simply run the executable:
 
 ```bash
-./target/release/nuclear-monitor
+> ./target/release/nuclears
+# OR
+> cargo run
 ```
 
 ## How it works
